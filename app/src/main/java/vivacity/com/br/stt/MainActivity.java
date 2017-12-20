@@ -4,6 +4,7 @@ import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
+import android.speech.tts.TextToSpeech;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -16,8 +17,20 @@ import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
+
     private TextView tvResult;
     private static final int RECOGNIZE_SPEECH = 10;
+    private static final int MY_DATA_CHECK_CODE = 20;
+    private TextToSpeech textToSpeech;
+    private String text;
+
+    public String getText() {
+        return text;
+    }
+
+    public void setText(String text) {
+        this.text = text;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,14 +63,21 @@ public class MainActivity extends AppCompatActivity {
 
         // getPackageManager = Para descobrir se a captação de áudio do dispositivo móvel está realmente ativa.
 
-        /**
-        if (intent.resolveActivity(getPackageManager()) != null) {
-            startActivityForResult(intent, RECOGNIZE_SPEECH);
-        } else {
-            Toast.makeText(MainActivity.this, "Your device don't support Speech Input", Toast.LENGTH_LONG).show();
-        }
-         or use the following try catch
-         */
+        //
+
+        //if (intent.resolveActivity(getPackageManager()) != null) {
+
+        //startActivityForResult(intent, RECOGNIZE_SPEECH);
+
+        //} else {
+
+        //Toast.makeText(MainActivity.this, "Your device don't support Speech Input", Toast.LENGTH_LONG).show();
+
+        //}
+
+        //or use the following try catch
+
+        //
 
         // NOTE: There may not be any applications installed to handle this action, so you should make sure to catch ActivityNotFoundException.
         // See: https://developer.android.com/reference/android/speech/RecognizerIntent.html#ACTION_RECOGNIZE_SPEECH
@@ -67,6 +87,13 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
             Toast.makeText(MainActivity.this, "Your device don't support Speech Input", Toast.LENGTH_LONG).show();
         }
+    }
+
+    public void textToSpeak(View view) {
+
+        Intent checkIntent = new Intent();
+        checkIntent.setAction(TextToSpeech.Engine.ACTION_CHECK_TTS_DATA);
+        startActivityForResult(checkIntent, MY_DATA_CHECK_CODE);
     }
 
     @Override
@@ -79,8 +106,76 @@ public class MainActivity extends AppCompatActivity {
                     // See: https://developer.android.com/reference/android/speech/RecognizerIntent.html#EXTRA_RESULTS
                     ArrayList<String> result =  data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
                     tvResult.setText(result.get(0));
+                    setText(result.get(0));
                 }
                 break;
+
+            case MY_DATA_CHECK_CODE:
+                if (resultCode == TextToSpeech.Engine.CHECK_VOICE_DATA_PASS) {
+
+                    // success, create the TTS instance
+                    textToSpeech = new TextToSpeech(MainActivity.this, new TextToSpeech.OnInitListener() {
+
+                        @Override
+                        public void onInit(int status) {
+
+                            if (status == TextToSpeech.SUCCESS) {
+
+                                if (textToSpeech.isLanguageAvailable(new Locale("pt", "BR")) == TextToSpeech.LANG_COUNTRY_AVAILABLE) {
+
+                                    // The specified language as represented by the Locale is available and supported.
+                                    textToSpeech.setLanguage(new Locale("pt", "BR"));
+
+                                    //setText("Olá"); <-- Test (in Portuguese Brazilian) here
+                                    if (getText() != null) {
+
+                                        if (getText().length() <= TextToSpeech.getMaxSpeechInputLength()) {
+
+                                            System.out.println("Text length = " + getText().length());
+                                            textToSpeech.speak("Você disse: " + getText(), TextToSpeech.QUEUE_FLUSH, null);
+                                        } else {
+
+                                            System.out.println("Limit of length of input string passed to speak and synthesizeToFile = "+ TextToSpeech.getMaxSpeechInputLength());
+                                            Toast.makeText(MainActivity.this, "Limit of length of input string passed to speak and synthesizeToFile = "+ TextToSpeech.getMaxSpeechInputLength(), Toast.LENGTH_LONG).show();
+                                        }
+                                    } else {
+                                        Toast.makeText(MainActivity.this, "Sem texto a ser sintetizado", Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+                            } else {
+                                Toast.makeText(MainActivity.this, "Your device don't support Speech output", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    });
+                } else {
+
+                    // We need to let the user know to install the data that's required for the
+                    // device to become a multi-lingual talking machine! Downloading and installing
+                    // the data is accomplished by firing off the ACTION_INSTALL_TTS_DATA intent,
+                    // which will take the user to Android Market, and will let her/him initiate the
+                    // download. Installation of the data will happen automatically once the
+                    // download completes.
+                    // missing data, install it
+                    Intent installIntent = new Intent();
+                    installIntent.setAction(TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA);
+                    startActivity(installIntent);
+                }
+                break;
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        try {
+            if (textToSpeech != null) {
+                textToSpeech.stop();
+                textToSpeech.shutdown();
+                System.out.println("shutdown() invoked in method onDestroy()");
+            }
+        } catch (RuntimeException e) {
+            e.printStackTrace();
         }
     }
 }

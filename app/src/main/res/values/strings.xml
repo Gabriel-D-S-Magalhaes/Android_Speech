@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">STT</string>
+    <string name="ic_mic_description">Ícone de um microfone com as cores do Google.</string>
+    <string name="ic_tts_description">Ícone que representa a síntese de texto para fala.</string>
 </resources>
