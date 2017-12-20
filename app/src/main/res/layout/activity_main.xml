@@ -21,8 +21,20 @@
         android:layout_height="100dp"
         android:layout_centerHorizontal="true"
         android:layout_alignParentBottom="true"
-        android:layout_marginBottom="60dp"
+        android:layout_marginBottom="150dp"
         android:onClick="getSpeechInput"
-        android:src="@drawable/ic_mic"/>
+        android:src="@drawable/ic_mic"
+        android:contentDescription="@string/ic_mic_description"/>
+
+    <ImageView
+        android:id="@+id/btnTTS"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="40dp"
+        android:onClick="textToSpeak"
+        android:src="@drawable/ic_tts"
+        android:contentDescription="@string/ic_tts_description"/>
 
 </RelativeLayout>
