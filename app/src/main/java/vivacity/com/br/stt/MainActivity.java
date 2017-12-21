@@ -89,6 +89,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Check for the presence of the TTS resources with the corresponding intent:
+     * */
     public void textToSpeak(View view) {
 
         Intent checkIntent = new Intent();
@@ -111,8 +114,11 @@ public class MainActivity extends AppCompatActivity {
                 break;
 
             case MY_DATA_CHECK_CODE:
+                // A successful check will be marked by a CHECK_VOICE_DATA_PASS result code,
+                // indicating this device is ready to speak ...
                 if (resultCode == TextToSpeech.Engine.CHECK_VOICE_DATA_PASS) {
 
+                    // after the creation of our android.speech.tts.TextToSpeech object.
                     // success, create the TTS instance
                     textToSpeech = new TextToSpeech(MainActivity.this, new TextToSpeech.OnInitListener() {
 
