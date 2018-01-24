@@ -2,6 +2,7 @@ package vivacity.com.br.stt;
 
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.net.Uri;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.tts.TextToSpeech;
@@ -84,14 +85,27 @@ public class MainActivity extends AppCompatActivity {
         try {
             startActivityForResult(intent, RECOGNIZE_SPEECH);
         } catch (ActivityNotFoundException e) {
+
             e.printStackTrace();
             Toast.makeText(MainActivity.this, "Your device don't support Speech Input", Toast.LENGTH_LONG).show();
+
+            // Google App is necessary!
+            // Link to download apk: https://www.apkmirror.com/apk/google-inc/google-search/
+            String appPackageName = "com.google.android.googlequicksearchbox";
+            try {
+
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + appPackageName)));
+
+            } catch (ActivityNotFoundException anfe) {
+
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + appPackageName)));
+            }
         }
     }
 
     /**
      * Check for the presence of the TTS resources with the corresponding intent:
-     * */
+     */
     public void textToSpeak(View view) {
 
         Intent checkIntent = new Intent();
@@ -107,7 +121,7 @@ public class MainActivity extends AppCompatActivity {
             case RECOGNIZE_SPEECH:
                 if (resultCode == RESULT_OK && data != null) {
                     // See: https://developer.android.com/reference/android/speech/RecognizerIntent.html#EXTRA_RESULTS
-                    ArrayList<String> result =  data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+                    ArrayList<String> result = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
                     tvResult.setText(result.get(0));
                     setText(result.get(0));
                 }
@@ -141,8 +155,8 @@ public class MainActivity extends AppCompatActivity {
                                             textToSpeech.speak("Você disse: " + getText(), TextToSpeech.QUEUE_FLUSH, null);
                                         } else {
 
-                                            System.out.println("Limit of length of input string passed to speak and synthesizeToFile = "+ TextToSpeech.getMaxSpeechInputLength());
-                                            Toast.makeText(MainActivity.this, "Limit of length of input string passed to speak and synthesizeToFile = "+ TextToSpeech.getMaxSpeechInputLength(), Toast.LENGTH_LONG).show();
+                                            System.out.println("Limit of length of input string passed to speak and synthesizeToFile = " + TextToSpeech.getMaxSpeechInputLength());
+                                            Toast.makeText(MainActivity.this, "Limit of length of input string passed to speak and synthesizeToFile = " + TextToSpeech.getMaxSpeechInputLength(), Toast.LENGTH_LONG).show();
                                         }
                                     } else {
                                         Toast.makeText(MainActivity.this, "Sem texto a ser sintetizado", Toast.LENGTH_SHORT).show();
